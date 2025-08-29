@@ -6,12 +6,286 @@
   <title>User Stories Helper — MVP (HTML + Tailwind + Alpine)</title>
   <meta name="color-scheme" content="light dark" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-in-out',
+            'scale-in': 'scaleIn 0.2s ease-out',
+          },
+          backdropBlur: {
+            xs: '2px',
+          }
+        }
+      }
+    }
+  </script>
   <style>
     /* Melhor contraste para <mark> no modo escuro e evitar FOUC quando Alpine carrega */
-    :root { --mark-bg: #fff3a3; }
-    @media (prefers-color-scheme: dark) { :root { --mark-bg: #6b6400; } }
-    mark { background: var(--mark-bg); padding: 0 .2em; border-radius: .25rem; }
-    [x-cloak] { display: none !important; }
+    :root { 
+      --mark-bg: #fef3c7; 
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    .dark:root { 
+      --mark-bg: #92400e; 
+      --gradient-primary: linear-gradient(135deg, #4c1d95 0%, #581c87 100%);
+      --gradient-secondary: linear-gradient(135deg, #be185d 0%, #be123c 100%);
+      --gradient-success: linear-gradient(135deg, #065f46 0%, #064e3b 100%);
+    }
+    
+    mark { 
+      background: var(--mark-bg); 
+      padding: 0 .2em; 
+      border-radius: .25rem; 
+    }
+    [x-cloak] { 
+      display: none !important; 
+    }
+    
+    /* Gradientes personalizados */
+    .gradient-primary {
+      background: var(--gradient-primary);
+    }
+    .gradient-secondary {
+      background: var(--gradient-secondary);
+    }
+    .gradient-success {
+      background: var(--gradient-success);
+    }
+    
+    /* Animações suaves */
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Cards limpos e modernos */
+    .glass-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+    
+    .dark .glass-card {
+      background: #111827;
+      border-color: #374151;
+    }
+    
+    /* Inputs modernos e clean */
+    .input-clean {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #111827;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    
+    .input-clean::placeholder {
+      color: #9ca3af;
+    }
+    
+    .input-clean:hover {
+      border-color: #9ca3af;
+    }
+    
+    .input-clean:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    /* Dark mode para inputs */
+    .dark .input-clean {
+      background: #1f2937;
+      border-color: #4b5563;
+      color: #f9fafb;
+    }
+    
+    .dark .input-clean::placeholder {
+      color: #6b7280;
+    }
+    
+    .dark .input-clean:hover {
+      border-color: #6b7280;
+    }
+    
+    .dark .input-clean:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    }
+    
+    /* Textarea específico */
+    .textarea-clean {
+      min-height: 100px;
+      resize: none;
+    }
+    
+    /* Select específico */
+    .select-clean {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 12px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+    
+    .dark .select-clean {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%9ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    }
+    
+    /* Labels com efeito underline */
+    .label-clean {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      position: relative;
+      letter-spacing: 0.025em;
+    }
+    
+    .dark .label-clean {
+      color: #d1d5db;
+    }
+    
+    .label-clean::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 1px;
+    }
+    
+    .input-group:focus-within .label-clean::after {
+      width: 100%;
+    }
+    
+    /* Inputs específicos para Gherkin */
+    .input-given:focus {
+      border-color: rgba(5, 150, 105, 0.8) !important;
+      box-shadow: 0 8px 25px -8px rgba(5, 150, 105, 0.3), 0 0 0 3px rgba(5, 150, 105, 0.1) !important;
+    }
+    
+    .input-when:focus {
+      border-color: rgba(59, 130, 246, 0.8) !important;
+      box-shadow: 0 8px 25px -8px rgba(59, 130, 246, 0.3), 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+    
+    .input-then:focus {
+      border-color: rgba(147, 51, 234, 0.8) !important;
+      box-shadow: 0 8px 25px -8px rgba(147, 51, 234, 0.3), 0 0 0 3px rgba(147, 51, 234, 0.1) !important;
+    }
+    
+    .dark .input-given:focus {
+      border-color: rgba(16, 185, 129, 0.8) !important;
+      box-shadow: 0 8px 25px -8px rgba(16, 185, 129, 0.4), 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+    }
+    
+    .dark .input-when:focus {
+      border-color: rgba(96, 165, 250, 0.8) !important;
+      box-shadow: 0 8px 25px -8px rgba(96, 165, 250, 0.4), 0 0 0 3px rgba(96, 165, 250, 0.1) !important;
+    }
+    
+    .dark .input-then:focus {
+      border-color: rgba(196, 122, 251, 0.8) !important;
+      box-shadow: 0 8px 25px -8px rgba(196, 122, 251, 0.4), 0 0 0 3px rgba(196, 122, 251, 0.1) !important;
+    }
+    
+    /* Efeito quando input tem conteúdo */
+    .input-clean:not(:placeholder-shown) {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .dark .input-clean:not(:placeholder-shown) {
+      background: rgba(31, 41, 55, 0.8);
+      border-color: rgba(129, 140, 248, 0.3);
+    }
+    
+    /* Animação suave no label quando input está focado ou tem conteúdo */
+    .input-group:focus-within .label-clean,
+    .input-group:has(.input-clean:not(:placeholder-shown)) .label-clean {
+      color: #4f46e5;
+      transform: translateY(-2px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .dark .input-group:focus-within .label-clean,
+    .dark .input-group:has(.input-clean:not(:placeholder-shown)) .label-clean {
+      color: #818cf8;
+    }
+    
+    /* Estilos para labels */
+    .label-clean {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .dark .label-clean {
+      color: #d1d5db;
+    }
+    
+    /* Container para inputs */
+    .input-group {
+      position: relative;
+    }
+    
+    /* Efeito de elevação no input quando focado */
+    .input-clean:focus,
+    .textarea-clean:focus,
+    .select-clean:focus {
+      transform: translateY(-1px);
+    }
+    
+    /* Efeito de loading/typing */
+    .input-clean:not(:placeholder-shown):focus {
+      background: rgba(255, 255, 255, 0.98);
+    }
+    
+    .dark .input-clean:not(:placeholder-shown):focus {
+      background: rgba(31, 41, 55, 0.9);
+    }
+    
+    /* Indicador visual de sucesso para inputs preenchidos */
+    .input-clean:valid:not(:placeholder-shown):not(:focus) {
+      border-color: rgba(34, 197, 94, 0.3);
+      background: rgba(240, 253, 244, 0.8);
+    }
+    
+    .dark .input-clean:valid:not(:placeholder-shown):not(:focus) {
+      border-color: rgba(34, 197, 94, 0.3);
+      background: rgba(20, 83, 45, 0.2);
+    }
+    
+    /* Animação suave para todas as transições de input */
+    .input-clean,
+    .textarea-clean,
+    .select-clean {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
   </style>
 
   <!--
@@ -34,6 +308,8 @@
     document.addEventListener('alpine:init', () => {
       Alpine.data('app', () => ({
         storageKey: 'user-stories-helper-v1',
+        darkModeKey: 'user-stories-dark-mode',
+        isDarkMode: false,
         ambiguousTerms: ['rápido','fácil','simples','intuitivo','eficiente','robusto','escalável','otimizado','seguro','melhor','estável','confiável','flexível'],
         lint: { issues: [] },
         checks: { persona: false, value: false, criteria: false, dependencies: false, size: false },
@@ -167,6 +443,39 @@
           };
           return map[term] || 'Substitua por uma métrica observável.';
         },
+        // --- Dark Mode ---
+        initDarkMode() {
+          try {
+            const saved = localStorage.getItem(this.darkModeKey);
+            if (saved !== null) {
+              this.isDarkMode = JSON.parse(saved);
+            } else {
+              // Se não há preferência salva, usar preferência do sistema
+              this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+            this.applyDarkMode();
+          } catch(e) {
+            console.warn('Erro ao carregar preferência de dark mode:', e);
+            this.isDarkMode = false;
+            this.applyDarkMode();
+          }
+        },
+        toggleDarkMode() {
+          this.isDarkMode = !this.isDarkMode;
+          this.applyDarkMode();
+          try {
+            localStorage.setItem(this.darkModeKey, JSON.stringify(this.isDarkMode));
+          } catch(e) {
+            console.warn('Erro ao salvar preferência de dark mode:', e);
+          }
+        },
+        applyDarkMode() {
+          if (this.isDarkMode) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        },
         // --- Persistência ---
         saveLocal() {
           try {
@@ -274,180 +583,235 @@
   </script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" crossorigin="anonymous"></script>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased" x-data="app" x-init="loadLocal()" x-cloak>
-  <div class="min-h-screen">
+<body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased min-h-screen" x-data="app" x-init="initDarkMode(); loadLocal()" x-cloak>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Topbar -->
-    <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3">
-        <div class="flex items-center gap-2">
-          <svg class="w-6 h-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M4 5h16"/><path d="M7 5v14"/><path d="M17 5v14"/></svg>
-          <span class="font-semibold">User Stories Helper</span>
-          <span class="text-xs text-gray-500">(MVP)</span>
+    <header class="sticky top-0 z-20 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-blue-600 rounded-lg">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M4 5h16"/><path d="M7 5v14"/><path d="M17 5v14"/></svg>
+          </div>
+          <div>
+            <span class="font-semibold text-lg text-gray-900 dark:text-white">User Stories Helper</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400">MVP Edition</span>
+          </div>
         </div>
         <div class="ml-auto flex items-center gap-2">
-          <button @click="clearAll()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100 active:scale-[.99]" aria-label="Limpar todos os campos e começar nova história">Novo</button>
-          <button @click="downloadMarkdown()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100" aria-label="Baixar história como arquivo Markdown">Exportar .md</button>
-          <button @click="copyMarkdown()" class="px-3 py-1.5 rounded-lg text-sm bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm" aria-label="Copiar história em formato Markdown para área de transferência">Copiar Markdown</button>
+          <button @click="toggleDarkMode()" class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Alternar modo escuro">
+            <svg x-show="!isDarkMode" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>
+            <svg x-show="isDarkMode" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+          <button @click="clearAll()" class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" aria-label="Limpar todos os campos e começar nova história">
+            <svg class="w-4 h-4 inline mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            Novo
+          </button>
+          <button @click="downloadMarkdown()" class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" aria-label="Baixar história como arquivo Markdown">
+            <svg class="w-4 h-4 inline mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar
+          </button>
+          <button @click="copyMarkdown()" class="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" aria-label="Copiar história em formato Markdown para área de transferência">
+            <svg class="w-4 h-4 inline mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copiar
+          </button>
         </div>
       </div>
     </header>
 
     <!-- Main -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Editor -->
       <section class="lg:col-span-7 space-y-6">
         <!-- Card: Básico da história -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6" @input="saveLocal()">
-          <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-16H3l9 16z"/></svg>
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6" @input="saveLocal()">
+          <h2 class="text-lg font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-white">
+            <div class="p-1.5 bg-blue-100 dark:bg-blue-900 rounded">
+              <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-16H3l9 16z"/></svg>
+            </div>
             História — básico
           </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label class="block">
-              <span class="text-sm text-gray-600">Título</span>
-              <input x-model.trim="story.title" @blur="autoTitle()" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Aprovação de despesas no mobile" />
-            </label>
-            <label class="block">
-              <span class="text-sm text-gray-600">Persona (Como)</span>
-              <input x-model.trim="story.persona" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Aprovador financeiro" />
-            </label>
-            <label class="block sm:col-span-2">
-              <span class="text-sm text-gray-600">Ação (Eu quero)</span>
-              <input x-model.trim="story.action" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="aprovar despesas pelo aplicativo" />
-            </label>
-            <label class="block sm:col-span-2">
-              <span class="text-sm text-gray-600">Benefício (Para)</span>
-              <input x-model.trim="story.benefit" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="reduzir o tempo de reembolso" />
-            </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="input-group">
+              <label class="label-clean">Título</label>
+              <input x-model.trim="story.title" @blur="autoTitle()" type="text" class="input-clean" placeholder="Aprovação de despesas no mobile" />
+            </div>
+            <div class="input-group">
+              <label class="label-clean">Persona (Como)</label>
+              <input x-model.trim="story.persona" type="text" class="input-clean" placeholder="Aprovador financeiro" />
+            </div>
+            <div class="input-group sm:col-span-2">
+              <label class="label-clean">Ação (Eu quero)</label>
+              <input x-model.trim="story.action" type="text" class="input-clean" placeholder="aprovar despesas pelo aplicativo" />
+            </div>
+            <div class="input-group sm:col-span-2">
+              <label class="label-clean">Benefício (Para)</label>
+              <input x-model.trim="story.benefit" type="text" class="input-clean" placeholder="reduzir o tempo de reembolso" />
+            </div>
           </div>
-          <p class="mt-4 text-sm text-gray-700">
-            <span class="font-medium">User Story:</span>
-            <span x-text="userStoryLine()" class="ml-1"></span>
-          </p>
+          <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <p class="text-sm">
+              <span class="font-medium text-gray-700 dark:text-gray-300">User Story:</span>
+              <span x-text="userStoryLine()" class="ml-2 text-gray-600 dark:text-gray-400"></span>
+            </p>
+          </div>
         </div>
 
         <!-- Card: Detalhes -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6" @input="saveLocal()">
-          <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M9 4v16"/></svg>
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6" @input="saveLocal()">
+          <h2 class="text-lg font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-white">
+            <div class="p-1.5 bg-green-100 dark:bg-green-900 rounded">
+              <svg class="w-4 h-4 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M9 4v16"/></svg>
+            </div>
             Detalhes
           </h2>
-          <div class="grid grid-cols-1 gap-4">
-            <label class="block">
-              <span class="text-sm text-gray-600">Descrição curta</span>
-              <textarea x-model.trim="story.description" rows="3" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Contexto, restrições, hipóteses"></textarea>
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label class="block">
-                <span class="text-sm text-gray-600">Dependências</span>
-                <input x-model.trim="story.dependencies" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Ex: autenticação, políticas de aprovação" />
-              </label>
-              <label class="block">
-                <span class="text-sm text-gray-600">Tags</span>
-                <input x-model.trim="story.tags" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="fintech, mobile, aprovação" />
-              </label>
+          <div class="grid grid-cols-1 gap-6">
+            <div class="input-group">
+              <label class="label-clean">Descrição curta</label>
+              <textarea x-model.trim="story.description" rows="4" class="input-clean textarea-clean" placeholder="Contexto, restrições, hipóteses"></textarea>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <label class="block">
-                <span class="text-sm text-gray-600">Prioridade</span>
-                <select x-model="story.priority" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="input-group">
+                <label class="label-clean">Dependências</label>
+                <input x-model.trim="story.dependencies" type="text" class="input-clean" placeholder="Ex: autenticação, políticas de aprovação" />
+              </div>
+              <div class="input-group">
+                <label class="label-clean">Tags</label>
+                <input x-model.trim="story.tags" type="text" class="input-clean" placeholder="fintech, mobile, aprovação" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+              <div class="input-group">
+                <label class="label-clean">Prioridade</label>
+                <select x-model="story.priority" class="input-clean select-clean">
                   <option value="">—</option>
                   <option>Must</option>
                   <option>Should</option>
                   <option>Could</option>
                   <option>Won't</option>
                 </select>
-              </label>
-              <label class="block">
-                <span class="text-sm text-gray-600">Estimativa (pts)</span>
-                <input x-model="story.estimate" type="number" min="0" step="0.5" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" />
-              </label>
+              </div>
+              <div class="input-group">
+                <label class="label-clean">Estimativa (pts)</label>
+                <input x-model="story.estimate" type="number" min="0" step="0.5" class="input-clean" />
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Card: Critérios de Aceitação -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6" @input="saveLocal()">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold flex items-center gap-2">
-              <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
-              Critérios de Aceitação (Gherkin)
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6" @input="saveLocal()">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
+              <div class="p-1.5 bg-emerald-100 dark:bg-emerald-900 rounded">
+                <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+              </div>
+              Critérios de Aceitação
             </h2>
             <div class="flex items-center gap-2">
-              <button @click="addScenario()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100" aria-label="Adicionar novo cenário de teste">Adicionar cenário</button>
-              <button @click="generateHappyPath()" class="px-3 py-1.5 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700" aria-label="Gerar automaticamente cenário de caminho feliz">Gerar Happy Path</button>
+              <button @click="addScenario()" class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" aria-label="Adicionar novo cenário de teste">
+                <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Adicionar
+              </button>
+              <button @click="generateHappyPath()" class="px-3 py-1.5 text-sm font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors" aria-label="Gerar automaticamente cenário de caminho feliz">
+                <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Happy Path
+              </button>
             </div>
           </div>
           <template x-for="(sc, idx) in story.criteria" :key="sc.id">
-            <div class="border border-gray-200 rounded-xl p-3 sm:p-4 mb-3">
-              <div class="flex items-center justify-between mb-3">
-                <div class="text-sm font-medium text-gray-700">Cenário <span x-text="idx + 1"></span></div>
-                <button @click="removeScenario(idx)" class="text-xs text-red-600 hover:underline" aria-label="Remover este cenário">Remover</button>
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-medium" x-text="idx + 1"></div>
+                  <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Cenário <span x-text="idx + 1"></span></div>
+                </div>
+                <button @click="removeScenario(idx)" class="text-xs text-red-600 hover:text-red-800 font-medium" aria-label="Remover este cenário">
+                  <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/></svg>
+                  Remover
+                </button>
               </div>
-              <div class="grid grid-cols-1 gap-2">
-                <label class="block">
-                  <span class="text-xs text-gray-600">Given</span>
-                  <input x-model.trim="sc.given" type="text" class="mt-1 w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="que sou um aprovador autenticado"/>
-                </label>
-                <label class="block">
-                  <span class="text-xs text-gray-600">When</span>
-                  <input x-model.trim="sc.when" type="text" class="mt-1 w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="aprovo uma despesa com política válida"/>
-                </label>
-                <label class="block">
-                  <span class="text-xs text-gray-600">Then</span>
-                  <input x-model.trim="sc.then" type="text" class="mt-1 w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="o status muda para 'Aprovada' e o solicitante é notificado"/>
-                </label>
+              <div class="grid grid-cols-1 gap-4">
+                <div class="input-group">
+                  <label class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-2 block uppercase tracking-wide">Given</label>
+                  <input x-model.trim="sc.given" type="text" class="input-clean input-given" placeholder="que sou um aprovador autenticado"/>
+                </div>
+                <div class="input-group">
+                  <label class="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 block uppercase tracking-wide">When</label>
+                  <input x-model.trim="sc.when" type="text" class="input-clean input-when" placeholder="aprovo uma despesa com política válida"/>
+                </div>
+                <div class="input-group">
+                  <label class="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-2 block uppercase tracking-wide">Then</label>
+                  <input x-model.trim="sc.then" type="text" class="input-clean input-then" placeholder="o status muda para 'Aprovada' e o solicitante é notificado"/>
+                </div>
               </div>
             </div>
           </template>
-          <p class="text-xs text-gray-500">Dica: escreva em linguagem observável/testável. Evite termos vagos como "rápido" — defina métricas.</p>
+          <div class="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+            <p class="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2">
+              <svg class="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+              <span><strong>Dica:</strong> escreva em linguagem observável/testável. Evite termos vagos como "rápido" — defina métricas.</span>
+            </p>
+          </div>
         </div>
       </section>
 
       <!-- Painel lateral -->
       <aside class="lg:col-span-5 space-y-6">
         <!-- Preview & Export -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
-          <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-16H3l9 16z"/></svg>
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+          <h2 class="text-lg font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-white">
+            <div class="p-1.5 bg-gray-100 dark:bg-gray-800 rounded">
+              <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+            </div>
             Preview & Markdown
           </h2>
-          <div class="prose prose-sm max-w-none">
-            <h3 class="mt-0" x-text="story.title || 'Sem título' "></h3>
-            <p><strong>User Story:</strong> <span x-text="userStoryLine()"></span></p>
+          <div class="prose prose-sm max-w-none dark:prose-invert">
+            <h3 class="mt-0 text-lg font-semibold text-gray-900 dark:text-white" x-text="story.title || 'Sem título'"></h3>
+            <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 my-4">
+              <p class="mb-0"><strong class="text-blue-700 dark:text-blue-300">User Story:</strong> <span x-text="userStoryLine()" class="text-gray-700 dark:text-gray-300"></span></p>
+            </div>
             <template x-if="story.description">
-              <p><strong>Descrição:</strong> <span x-text="story.description"></span></p>
+              <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <p class="mb-0"><strong class="text-gray-700 dark:text-gray-300">Descrição:</strong> <span x-text="story.description" class="text-gray-600 dark:text-gray-400"></span></p>
+              </div>
             </template>
             <template x-if="story.dependencies">
-              <p><strong>Dependências:</strong> <span x-text="story.dependencies"></span></p>
+              <p><strong class="text-gray-700 dark:text-gray-300">Dependências:</strong> <span x-text="story.dependencies" class="text-gray-600 dark:text-gray-400"></span></p>
             </template>
             <template x-if="story.tags">
-              <p><strong>Tags:</strong> <span x-text="story.tags"></span></p>
+              <p><strong class="text-gray-700 dark:text-gray-300">Tags:</strong> <span x-text="story.tags" class="text-gray-600 dark:text-gray-400"></span></p>
             </template>
             <template x-if="story.priority || story.estimate">
-              <p><strong>Prioridade/Estimativa:</strong> <span x-text="story.priority || '—'"></span> • <span x-text="story.estimate ? story.estimate + ' pts' : '—'"></span></p>
+              <p><strong class="text-gray-700 dark:text-gray-300">Prioridade/Estimativa:</strong> <span x-text="story.priority || '—'" class="text-gray-600 dark:text-gray-400"></span> • <span x-text="story.estimate ? story.estimate + ' pts' : '—'" class="text-gray-600 dark:text-gray-400"></span></p>
             </template>
             <template x-if="story.criteria.length">
               <div>
-                <h4>Critérios de Aceitação</h4>
-                <pre class="bg-gray-50 border border-gray-200 rounded-xl p-3 overflow-auto" x-text="gherkinBlock()"></pre>
+                <h4 class="text-gray-700 dark:text-gray-300 font-semibold">Critérios de Aceitação</h4>
+                <pre class="bg-gray-900 dark:bg-gray-950 text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg p-4 overflow-auto text-sm font-mono" x-text="gherkinBlock()"></pre>
               </div>
             </template>
           </div>
-          <div class="mt-4 flex items-center gap-2">
-            <button @click="copyMarkdown()" class="px-3 py-1.5 rounded-lg text-sm bg-indigo-600 text-white hover:bg-indigo-700" aria-label="Copiar preview em formato Markdown">Copiar Markdown</button>
-            <button @click="downloadMarkdown()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100" aria-label="Baixar preview como arquivo Markdown">Exportar .md</button>
+          <div class="mt-6 flex items-center gap-2">
+            <button @click="copyMarkdown()" class="flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" aria-label="Copiar preview em formato Markdown">
+              <svg class="w-4 h-4 inline mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+            <button @click="downloadMarkdown()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" aria-label="Baixar preview como arquivo Markdown">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
           </div>
         </div>
 
         <!-- Lint de Ambiguidade -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold flex items-center gap-2">
-              <svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <h2 class="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
+              <div class="p-1.5 bg-amber-100 dark:bg-amber-900 rounded">
+                <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              </div>
               Lint de Ambiguidade
             </h2>
-            <button @click="scanAmbiguities()" class="text-xs text-gray-600 hover:underline" aria-label="Executar nova verificação de termos ambíguos">Reescanear</button>
+            <button @click="scanAmbiguities()" class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" aria-label="Executar nova verificação de termos ambíguos">Reescanear</button>
           </div>
           <template x-if="lint.issues.length === 0">
             <p class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl p-2 mt-3">Nenhuma ambiguidade óbvia encontrada.</p>
@@ -469,40 +833,76 @@
         </div>
 
         <!-- DoR & INVEST -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6" @input="saveLocal()">
-          <h2 class="text-lg font-semibold mb-3">Definition of Ready & INVEST</h2>
-          <div class="grid grid-cols-1 gap-2 text-sm">
-            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.persona" class="rounded"> Persona definida</label>
-            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.value" class="rounded"> Valor de negócio claro</label>
-            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.criteria" class="rounded"> Critérios testáveis</label>
-            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.dependencies" class="rounded"> Dependências mapeadas</label>
-            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.size" class="rounded"> Pequena (≤ 1 sprint)</label>
-          </div>
-          <div class="mt-4">
-            <div class="flex items-baseline justify-between">
-              <span class="text-sm text-gray-600">Score INVEST (heurístico)</span>
-              <span class="font-semibold" x-text="investScore().toFixed(0) + '%'">0%</span>
+        <div class="glass-card rounded-3xl shadow-xl border-0 p-6 sm:p-8 hover:shadow-2xl transition-all duration-300" @input="saveLocal()">
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-3">
+            <div class="p-2 gradient-success rounded-xl">
+              <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
             </div>
-            <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
-              <div class="bg-indigo-600 h-2 rounded-full" :style="'width:' + investScore() + '%' "></div>
+            <span class="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Definition of Ready & INVEST</span>
+          </h2>
+          <div class="grid grid-cols-1 gap-3 text-sm">
+            <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+              <input type="checkbox" x-model="checks.persona" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"> 
+              <span class="font-medium text-gray-700 dark:text-gray-300">Persona definida</span>
+            </label>
+            <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+              <input type="checkbox" x-model="checks.value" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"> 
+              <span class="font-medium text-gray-700 dark:text-gray-300">Valor de negócio claro</span>
+            </label>
+            <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+              <input type="checkbox" x-model="checks.criteria" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"> 
+              <span class="font-medium text-gray-700 dark:text-gray-300">Critérios testáveis</span>
+            </label>
+            <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+              <input type="checkbox" x-model="checks.dependencies" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"> 
+              <span class="font-medium text-gray-700 dark:text-gray-300">Dependências mapeadas</span>
+            </label>
+            <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+              <input type="checkbox" x-model="checks.size" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"> 
+              <span class="font-medium text-gray-700 dark:text-gray-300">Pequena (≤ 1 sprint)</span>
+            </label>
+          </div>
+          <div class="mt-6">
+            <div class="flex items-baseline justify-between mb-3">
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Score INVEST</span>
+              <span class="text-xl font-semibold text-green-600 dark:text-green-400" x-text="investScore() + '%'">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div class="bg-green-600 h-2 rounded-full transition-all duration-500" :style="'width:' + investScore() + '%'"></div>
             </div>
           </div>
         </div>
 
         <!-- Testes (Smoke) -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-lg font-semibold">Testes rápidos</h2>
-            <button @click="runTests()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100" aria-label="Executar testes de verificação do sistema">Executar testes</button>
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
+              <div class="p-1.5 bg-purple-100 dark:bg-purple-900 rounded">
+                <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </div>
+              Testes rápidos
+            </h2>
+            <button @click="runTests()" class="px-3 py-1.5 text-sm font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors" aria-label="Executar testes de verificação do sistema">
+              <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21 5,3"/></svg>
+              Executar
+            </button>
           </div>
           <template x-if="!tests.length">
-            <p class="text-sm text-gray-600">Nenhum teste executado ainda.</p>
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <p class="text-sm text-gray-600 dark:text-gray-400 text-center">Nenhum teste executado ainda.</p>
+            </div>
           </template>
-          <ul class="mt-2 space-y-1" x-show="tests.length">
+          <ul class="space-y-2" x-show="tests.length">
             <template x-for="t in tests" :key="t.name">
-              <li class="text-sm">
-                <span class="font-medium" x-text="t.name"></span> —
-                <span :class="t.pass ? 'text-emerald-700' : 'text-red-700'" x-text="t.pass ? 'OK' : 'Falhou'"></span>
+              <li class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" :class="t.pass ? 'bg-green-500' : 'bg-red-500'">
+                  <svg x-show="t.pass" class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+                  <svg x-show="!t.pass" class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-800 dark:text-gray-200" x-text="t.name"></p>
+                  <p class="text-xs font-medium mt-1" :class="t.pass ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'" x-text="t.pass ? 'PASSOU' : 'FALHOU'"></p>
+                </div>
               </li>
             </template>
           </ul>
@@ -511,8 +911,15 @@
     </main>
 
     <!-- Footer -->
-    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-xs text-gray-500">
-      Feito com HTML + Tailwind + Alpine. Dados salvos localmente (localStorage).
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 pt-6">
+      <div class="text-center border-t border-gray-200 dark:border-gray-800 pt-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Feito com ❤️ usando HTML + Tailwind + Alpine.js
+        </p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          Dados salvos localmente no seu navegador
+        </p>
+      </div>
     </footer>
   </div>
 </body>
