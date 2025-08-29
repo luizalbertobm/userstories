@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Stories Helper — MVP (HTML + Tailwind + Alpine)</title>
+  <meta name="color-scheme" content="light dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Melhor contraste para <mark> no modo escuro e evitar FOUC quando Alpine carrega */
+    :root { --mark-bg: #fff3a3; }
+    @media (prefers-color-scheme: dark) { :root { --mark-bg: #6b6400; } }
+    mark { background: var(--mark-bg); padding: 0 .2em; border-radius: .25rem; }
+    [x-cloak] { display: none !important; }
+  </style>
+
+  <!--
+    Fix principal: registrar o componente via `Alpine.data` no evento `alpine:init`
+    e usar x-data="app" (sem invocar função). Isso elimina condições de corrida
+    quando o Alpine inicializa antes da função global existir.
+  -->
+  <script>
+    // Fallback para crypto.randomUUID em navegadores antigos
+    (function(){
+      if (!('crypto' in window) || !('randomUUID' in window.crypto)) {
+        window.crypto = window.crypto || {};
+        window.crypto.randomUUID = function(){
+          const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+          return `${Date.now().toString(16)}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
+        };
+      }
+    })();
+
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('app', () => ({
+        storageKey: 'user-stories-helper-v1',
+        ambiguousTerms: ['rápido','fácil','simples','intuitivo','eficiente','robusto','escalável','otimizado','seguro','melhor','estável','confiável','flexível'],
+        lint: { issues: [] },
+        checks: { persona: false, value: false, criteria: false, dependencies: false, size: false },
+        story: {
+          title: '',
+          persona: '',
+          action: '',
+          benefit: '',
+          description: '',
+          dependencies: '',
+          tags: '',
+          priority: '',
+          estimate: '',
+          criteria: []
+        },
+        tests: [],
+        // --- Helpers ---
+        userStoryLine() {
+          const p = (this.story.persona || '').trim();
+          const a = (this.story.action || '').trim();
+          const b = (this.story.benefit || '').trim();
+          if (!p && !a && !b) return '—';
+          return 'Como ' + (p || '[persona]') + ', eu quero ' + (a || '[ação]') + ' para ' + (b || '[benefício]') + '.';
+        },
+        autoTitle() {
+          if (!this.story.title) {
+            const base = [this.story.action || '', this.story.benefit || ''].filter(Boolean).join(' — ');
+            this.story.title = base || 'Nova história';
+          }
+        },
+        addScenario() {
+          this.story.criteria.push({ id: crypto.randomUUID(), given: '', when: '', then: '' });
+          this.saveLocal();
+        },
+        removeScenario(i) { this.story.criteria.splice(i,1); this.saveLocal(); },
+        generateHappyPath() {
+          const given = this.story.persona ? ('que sou ' + this.story.persona.toLowerCase() + ' autenticado') : 'que estou autenticado';
+          const when = this.story.action ? this.story.action : 'realizo a ação principal';
+          const then = this.story.benefit ? ('então alcanço ' + this.story.benefit) : 'então vejo o resultado esperado';
+          this.story.criteria.push({ id: crypto.randomUUID(), given, when, then });
+          this.checks.criteria = true;
+          this.saveLocal();
+        },
+        gherkinBlock() {
+          const title = (this.story.title || 'Funcionalidade');
+          const lines = [ 'Feature: ' + title ];
+          this.story.criteria.forEach((sc, i) => {
+            lines.push('  Scenario: Cenário ' + (i+1));
+            if (sc.given) lines.push('    Given ' + sc.given);
+            if (sc.when)  lines.push('    When ' + sc.when);
+            if (sc.then)  lines.push('    Then ' + sc.then);
+          });
+          return lines.join('\n');
+        },
+        markdown() {
+          const parts = [];
+          parts.push('# ' + (this.story.title || 'Sem título'));
+          parts.push('');
+          parts.push('**User Story**');
+          parts.push(this.userStoryLine());
+          if (this.story.description) { parts.push('', '**Descrição**', this.story.description); }
+          const meta = [];
+          if (this.story.dependencies) meta.push('**Dependências:** ' + this.story.dependencies);
+          if (this.story.tags) meta.push('**Tags:** ' + this.story.tags);
+          if (this.story.priority || this.story.estimate) meta.push('**Prioridade/Estimativa:** ' + (this.story.priority || '—') + ' • ' + (this.story.estimate ? this.story.estimate + ' pts' : '—'));
+          if (meta.length) parts.push('', ...meta);
+          if (this.story.criteria.length) {
+            parts.push('', '**Critérios de Aceitação (Gherkin)**');
+            parts.push('```gherkin');
+            parts.push(this.gherkinBlock());
+            parts.push('```');
+          }
+          return parts.join('\n');
+        },
+        async copyMarkdown() {
+          const text = this.markdown();
+          try {
+            await navigator.clipboard.writeText(text);
+            toast('Markdown copiado!');
+          } catch(e) { 
+            console.error('Erro ao copiar para clipboard:', e); 
+            toast('Falha ao copiar.'); 
+          }
+        },
+        downloadMarkdown() {
+          const blob = new Blob([this.markdown()], { type: 'text/markdown;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = (this.story.title || 'user-story') + '.md';
+          document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+        },
+        // --- Lint ---
+        scanAmbiguities() {
+          this.lint.issues = [];
+          const fields = [
+            ['Título','title'], ['Persona','persona'], ['Ação','action'], ['Benefício','benefit'],
+            ['Descrição','description'], ['Dependências','dependencies']
+          ];
+          for (const [label, key] of fields) {
+            const text = (this.story[key] || '').toLowerCase();
+            if (!text) continue;
+            for (const term of this.ambiguousTerms) {
+              if (text.indexOf(term) !== -1) {
+                this.lint.issues.push({ field: label, term });
+              }
+            }
+          }
+          // Critérios também
+          this.story.criteria.forEach(sc => {
+            const block = ((sc.given || '') + ' ' + (sc.when || '') + ' ' + (sc.then || '')).toLowerCase();
+            for (const term of this.ambiguousTerms) {
+              if (block.indexOf(term) !== -1) this.lint.issues.push({ field: 'Critério', term });
+            }
+          });
+        },
+        suggestionFor(term) {
+          const map = {
+            'rápido': 'Defina SLA (ex.: P95 < 2s).',
+            'eficiente': 'Quantifique (ex.: reduzir consumo em 30%).',
+            'seguro': 'Especifique controles (MFA, criptografia em repouso, RBAC).',
+            'escalável': 'Defina carga-alvo (ex.: 1k req/s, auto-scaling).',
+            'robusto': 'Liste tolerância a falhas e SLOs.',
+            'intuitivo': 'Aponte heurísticas de usabilidade ou testes com usuários.',
+            'simples': 'Explique o que é removido/omitido; limite de passos.',
+            'melhor': 'Melhor que o quê? Dê baseline e métrica.',
+            'otimizado': 'Para qual métrica? tempo, memória, custo? Quantifique.',
+            'estável': 'Defina uptime/MTBF/MTTR.',
+            'confiável': 'Defina taxa de erro permitida (ex.: <0,1%).',
+            'flexível': 'Quais variações são suportadas? Liste parâmetros.'
+          };
+          return map[term] || 'Substitua por uma métrica observável.';
+        },
+        // --- Persistência ---
+        saveLocal() {
+          try {
+            const dataToSave = { 
+              story: this.story, 
+              checks: this.checks 
+            };
+            localStorage.setItem(this.storageKey, JSON.stringify(dataToSave));
+          } catch(e) {
+            console.warn('Falha ao salvar no localStorage:', e);
+            toast('Erro ao salvar dados localmente');
+          }
+          this.checks.criteria = this.story.criteria.length > 0;
+        },
+        loadLocal() {
+          let raw;
+          try { 
+            raw = localStorage.getItem(this.storageKey); 
+          } catch(e) { 
+            console.warn('Erro ao acessar localStorage:', e);
+            raw = null; 
+          }
+          if (!raw) return;
+          
+          try {
+            const data = JSON.parse(raw);
+            if (data.story && typeof data.story === 'object') {
+              this.story = Object.assign(this.story, data.story);
+            }
+            if (data.checks && typeof data.checks === 'object') {
+              this.checks = Object.assign(this.checks, data.checks);
+            }
+          } catch(e) { 
+            console.warn('Falha ao carregar dados do localStorage:', e); 
+            toast('Erro ao carregar dados salvos');
+          }
+        },
+        clearAll() {
+          this.story = { title:'', persona:'', action:'', benefit:'', description:'', dependencies:'', tags:'', priority:'', estimate:'', criteria:[] };
+          this.checks = { persona:false, value:false, criteria:false, dependencies:false, size:false };
+          this.lint.issues = [];
+          this.saveLocal();
+        },
+        // --- Score ---
+        investScore() {
+          let score = 0;
+          const total = 5; // persona, valor, critérios, dependências, tamanho
+          if (this.checks.persona) score += 1;
+          if (this.checks.value) score += 1;
+          if (this.story.criteria.length > 0) score += 1; // critérios
+          if (this.checks.dependencies) score += 1;
+          if (this.checks.size) score += 1;
+          return Math.round((score / total) * 100);
+        },
+        // --- Self Tests (smoke) ---
+        runTests() {
+          const results = [];
+          const assert = (name, cond) => results.push({ name, pass: !!cond });
+
+          // Teste 1: linha inicial vazia
+          const initialLine = this.userStoryLine();
+          assert('UserStory vazia rende —', initialLine === '—');
+
+          // Teste 2: happy path gera critério
+          const snapshot = JSON.parse(JSON.stringify(this.story));
+          this.story.persona = 'Aprovador';
+          this.story.action = 'aprovar despesas';
+          this.story.benefit = 'reduzir o tempo de reembolso';
+          const before = this.story.criteria.length;
+          this.generateHappyPath();
+          const after = this.story.criteria.length;
+          assert('Gerar Happy Path adiciona 1 critério', after === before + 1);
+
+          // Teste 3: Gherkin contém Feature e Scenario
+          const gherkin = this.gherkinBlock();
+          assert('Gherkin tem Feature', gherkin.indexOf('Feature:') !== -1);
+          assert('Gherkin tem Scenario', gherkin.indexOf('Scenario:') !== -1);
+
+          // Teste 4: INVEST 0% quando nenhum check marcado
+          this.checks = { persona:false, value:false, criteria:false, dependencies:false, size:false };
+          this.story.criteria = [];
+          assert('INVEST 0% sem checks', this.investScore() === 0);
+
+          // Teste 5: INVEST 100% quando todos os checks e critérios
+          this.checks = { persona:true, value:true, criteria:true, dependencies:true, size:true };
+          this.story.criteria = [{id:'t', given:'g', when:'w', then:'t'}];
+          assert('INVEST 100% com tudo marcado', this.investScore() === 100);
+
+          // Restaurar snapshot
+          this.story = Object.assign(this.story, snapshot);
+          this.tests = results;
+          return results;
+        }
+      }));
+    });
+
+    // Mini toast não intrusivo
+    function toast(msg) {
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-3 py-2 rounded-xl shadow-lg z-50';
+      document.body.appendChild(el);
+      setTimeout(() => { el.remove(); }, 1800);
+    }
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased" x-data="app" x-init="loadLocal()" x-cloak>
+  <div class="min-h-screen">
+    <!-- Topbar -->
+    <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-6 h-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M4 5h16"/><path d="M7 5v14"/><path d="M17 5v14"/></svg>
+          <span class="font-semibold">User Stories Helper</span>
+          <span class="text-xs text-gray-500">(MVP)</span>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+          <button @click="clearAll()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100 active:scale-[.99]" aria-label="Limpar todos os campos e começar nova história">Novo</button>
+          <button @click="downloadMarkdown()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100" aria-label="Baixar história como arquivo Markdown">Exportar .md</button>
+          <button @click="copyMarkdown()" class="px-3 py-1.5 rounded-lg text-sm bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm" aria-label="Copiar história em formato Markdown para área de transferência">Copiar Markdown</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Editor -->
+      <section class="lg:col-span-7 space-y-6">
+        <!-- Card: Básico da história -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6" @input="saveLocal()">
+          <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-16H3l9 16z"/></svg>
+            História — básico
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="text-sm text-gray-600">Título</span>
+              <input x-model.trim="story.title" @blur="autoTitle()" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Aprovação de despesas no mobile" />
+            </label>
+            <label class="block">
+              <span class="text-sm text-gray-600">Persona (Como)</span>
+              <input x-model.trim="story.persona" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Aprovador financeiro" />
+            </label>
+            <label class="block sm:col-span-2">
+              <span class="text-sm text-gray-600">Ação (Eu quero)</span>
+              <input x-model.trim="story.action" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="aprovar despesas pelo aplicativo" />
+            </label>
+            <label class="block sm:col-span-2">
+              <span class="text-sm text-gray-600">Benefício (Para)</span>
+              <input x-model.trim="story.benefit" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="reduzir o tempo de reembolso" />
+            </label>
+          </div>
+          <p class="mt-4 text-sm text-gray-700">
+            <span class="font-medium">User Story:</span>
+            <span x-text="userStoryLine()" class="ml-1"></span>
+          </p>
+        </div>
+
+        <!-- Card: Detalhes -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6" @input="saveLocal()">
+          <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M9 4v16"/></svg>
+            Detalhes
+          </h2>
+          <div class="grid grid-cols-1 gap-4">
+            <label class="block">
+              <span class="text-sm text-gray-600">Descrição curta</span>
+              <textarea x-model.trim="story.description" rows="3" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Contexto, restrições, hipóteses"></textarea>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label class="block">
+                <span class="text-sm text-gray-600">Dependências</span>
+                <input x-model.trim="story.dependencies" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Ex: autenticação, políticas de aprovação" />
+              </label>
+              <label class="block">
+                <span class="text-sm text-gray-600">Tags</span>
+                <input x-model.trim="story.tags" type="text" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="fintech, mobile, aprovação" />
+              </label>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <label class="block">
+                <span class="text-sm text-gray-600">Prioridade</span>
+                <select x-model="story.priority" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                  <option value="">—</option>
+                  <option>Must</option>
+                  <option>Should</option>
+                  <option>Could</option>
+                  <option>Won't</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-gray-600">Estimativa (pts)</span>
+                <input x-model="story.estimate" type="number" min="0" step="0.5" class="mt-1 w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Critérios de Aceitação -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6" @input="saveLocal()">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+              Critérios de Aceitação (Gherkin)
+            </h2>
+            <div class="flex items-center gap-2">
+              <button @click="addScenario()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100" aria-label="Adicionar novo cenário de teste">Adicionar cenário</button>
+              <button @click="generateHappyPath()" class="px-3 py-1.5 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700" aria-label="Gerar automaticamente cenário de caminho feliz">Gerar Happy Path</button>
+            </div>
+          </div>
+          <template x-for="(sc, idx) in story.criteria" :key="sc.id">
+            <div class="border border-gray-200 rounded-xl p-3 sm:p-4 mb-3">
+              <div class="flex items-center justify-between mb-3">
+                <div class="text-sm font-medium text-gray-700">Cenário <span x-text="idx + 1"></span></div>
+                <button @click="removeScenario(idx)" class="text-xs text-red-600 hover:underline" aria-label="Remover este cenário">Remover</button>
+              </div>
+              <div class="grid grid-cols-1 gap-2">
+                <label class="block">
+                  <span class="text-xs text-gray-600">Given</span>
+                  <input x-model.trim="sc.given" type="text" class="mt-1 w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="que sou um aprovador autenticado"/>
+                </label>
+                <label class="block">
+                  <span class="text-xs text-gray-600">When</span>
+                  <input x-model.trim="sc.when" type="text" class="mt-1 w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="aprovo uma despesa com política válida"/>
+                </label>
+                <label class="block">
+                  <span class="text-xs text-gray-600">Then</span>
+                  <input x-model.trim="sc.then" type="text" class="mt-1 w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="o status muda para 'Aprovada' e o solicitante é notificado"/>
+                </label>
+              </div>
+            </div>
+          </template>
+          <p class="text-xs text-gray-500">Dica: escreva em linguagem observável/testável. Evite termos vagos como "rápido" — defina métricas.</p>
+        </div>
+      </section>
+
+      <!-- Painel lateral -->
+      <aside class="lg:col-span-5 space-y-6">
+        <!-- Preview & Export -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-16H3l9 16z"/></svg>
+            Preview & Markdown
+          </h2>
+          <div class="prose prose-sm max-w-none">
+            <h3 class="mt-0" x-text="story.title || 'Sem título' "></h3>
+            <p><strong>User Story:</strong> <span x-text="userStoryLine()"></span></p>
+            <template x-if="story.description">
+              <p><strong>Descrição:</strong> <span x-text="story.description"></span></p>
+            </template>
+            <template x-if="story.dependencies">
+              <p><strong>Dependências:</strong> <span x-text="story.dependencies"></span></p>
+            </template>
+            <template x-if="story.tags">
+              <p><strong>Tags:</strong> <span x-text="story.tags"></span></p>
+            </template>
+            <template x-if="story.priority || story.estimate">
+              <p><strong>Prioridade/Estimativa:</strong> <span x-text="story.priority || '—'"></span> • <span x-text="story.estimate ? story.estimate + ' pts' : '—'"></span></p>
+            </template>
+            <template x-if="story.criteria.length">
+              <div>
+                <h4>Critérios de Aceitação</h4>
+                <pre class="bg-gray-50 border border-gray-200 rounded-xl p-3 overflow-auto" x-text="gherkinBlock()"></pre>
+              </div>
+            </template>
+          </div>
+          <div class="mt-4 flex items-center gap-2">
+            <button @click="copyMarkdown()" class="px-3 py-1.5 rounded-lg text-sm bg-indigo-600 text-white hover:bg-indigo-700" aria-label="Copiar preview em formato Markdown">Copiar Markdown</button>
+            <button @click="downloadMarkdown()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100" aria-label="Baixar preview como arquivo Markdown">Exportar .md</button>
+          </div>
+        </div>
+
+        <!-- Lint de Ambiguidade -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+              <svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              Lint de Ambiguidade
+            </h2>
+            <button @click="scanAmbiguities()" class="text-xs text-gray-600 hover:underline" aria-label="Executar nova verificação de termos ambíguos">Reescanear</button>
+          </div>
+          <template x-if="lint.issues.length === 0">
+            <p class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl p-2 mt-3">Nenhuma ambiguidade óbvia encontrada.</p>
+          </template>
+          <template x-if="lint.issues.length">
+            <ul class="mt-3 space-y-2">
+              <template x-for="item in lint.issues" :key="item.term+item.field">
+                <li class="text-sm bg-amber-50 border border-amber-200 rounded-xl p-2">
+                  <span class="font-medium" x-text="item.field"></span> → termo vago <code class="px-1">“<span x-text="item.term"></span>”</code>.
+                  <span class="block text-gray-700" x-text="suggestionFor(item.term)"></span>
+                </li>
+              </template>
+            </ul>
+          </template>
+          <details class="mt-3 text-xs text-gray-600">
+            <summary class="cursor-pointer">Lista monitorada</summary>
+            <p class="mt-1" x-text="ambiguousTerms.join(', ')"></p>
+          </details>
+        </div>
+
+        <!-- DoR & INVEST -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6" @input="saveLocal()">
+          <h2 class="text-lg font-semibold mb-3">Definition of Ready & INVEST</h2>
+          <div class="grid grid-cols-1 gap-2 text-sm">
+            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.persona" class="rounded"> Persona definida</label>
+            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.value" class="rounded"> Valor de negócio claro</label>
+            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.criteria" class="rounded"> Critérios testáveis</label>
+            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.dependencies" class="rounded"> Dependências mapeadas</label>
+            <label class="flex items-center gap-2"><input type="checkbox" x-model="checks.size" class="rounded"> Pequena (≤ 1 sprint)</label>
+          </div>
+          <div class="mt-4">
+            <div class="flex items-baseline justify-between">
+              <span class="text-sm text-gray-600">Score INVEST (heurístico)</span>
+              <span class="font-semibold" x-text="investScore().toFixed(0) + '%'">0%</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
+              <div class="bg-indigo-600 h-2 rounded-full" :style="'width:' + investScore() + '%' "></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testes (Smoke) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg font-semibold">Testes rápidos</h2>
+            <button @click="runTests()" class="px-3 py-1.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-100" aria-label="Executar testes de verificação do sistema">Executar testes</button>
+          </div>
+          <template x-if="!tests.length">
+            <p class="text-sm text-gray-600">Nenhum teste executado ainda.</p>
+          </template>
+          <ul class="mt-2 space-y-1" x-show="tests.length">
+            <template x-for="t in tests" :key="t.name">
+              <li class="text-sm">
+                <span class="font-medium" x-text="t.name"></span> —
+                <span :class="t.pass ? 'text-emerald-700' : 'text-red-700'" x-text="t.pass ? 'OK' : 'Falhou'"></span>
+              </li>
+            </template>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 text-xs text-gray-500">
+      Feito com HTML + Tailwind + Alpine. Dados salvos localmente (localStorage).
+    </footer>
+  </div>
+</body>
+</html>
