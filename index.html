@@ -97,6 +97,20 @@
     .animate-fade-in {
       animation: fadeIn 0.3s ease-in-out;
     }
+
+    /* Suporte para line-clamp */
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Transição suave para margin do main quando sidebar abre */
+    main {
+      transition: margin-left 0.3s ease-out;
+    }
   </style>
 
   <!-- Dark mode script - deve ser executado antes de qualquer coisa para evitar flash -->
@@ -151,7 +165,12 @@
       Alpine.data('app', () => ({
         storageKey: 'user-stories-helper-v1',
         darkModeKey: 'user-stories-dark-mode',
+        savedStoriesKey: 'ush:v1:stories',
         isDarkMode: window.__darkModeState || false,
+        isSidebarOpen: false,
+        showStoryModal: false,
+        selectedStory: null,
+        savedStories: [],
         ambiguousTerms: ['rápido','fácil','simples','intuitivo','eficiente','robusto','escalável','otimizado','seguro','melhor','estável','confiável','flexível'],
         lint: { issues: [] },
         checks: { persona: false, value: false, criteria: false, dependencies: false, size: false },
@@ -341,26 +360,228 @@
             console.warn('Erro ao acessar localStorage:', e);
             raw = null; 
           }
-          if (!raw) return;
-          
-          try {
-            const data = JSON.parse(raw);
-            if (data.story && typeof data.story === 'object') {
-              this.story = Object.assign(this.story, data.story);
+          if (raw) {
+            try {
+              const data = JSON.parse(raw);
+              if (data.story && typeof data.story === 'object') {
+                this.story = Object.assign(this.story, data.story);
+              }
+              if (data.checks && typeof data.checks === 'object') {
+                this.checks = Object.assign(this.checks, data.checks);
+              }
+            } catch(e) { 
+              console.warn('Falha ao carregar dados do localStorage:', e); 
+              toast('Erro ao carregar dados salvos');
             }
-            if (data.checks && typeof data.checks === 'object') {
-              this.checks = Object.assign(this.checks, data.checks);
-            }
-          } catch(e) { 
-            console.warn('Falha ao carregar dados do localStorage:', e); 
-            toast('Erro ao carregar dados salvos');
           }
+          
+          // Carregar histórias salvas
+          this.loadSavedStories();
         },
         clearAll() {
           this.story = { title:'', persona:'', action:'', benefit:'', description:'', dependencies:'', tags:'', priority:'', estimate:'', criteria:[] };
           this.checks = { persona:false, value:false, criteria:false, dependencies:false, size:false };
           this.lint.issues = [];
           this.saveLocal();
+        },
+        
+        // === FUNCIONALIDADE DA SIDEBAR ===
+        
+        // Carregar histórias salvas do localStorage
+        loadSavedStories() {
+          try {
+            const saved = localStorage.getItem(this.savedStoriesKey);
+            if (saved) {
+              this.savedStories = JSON.parse(saved);
+              // Ordenar por updatedAt desc (mais recente primeiro)
+              this.savedStories.sort((a, b) => b.updatedAt - a.updatedAt);
+            }
+          } catch(e) {
+            console.warn('Erro ao carregar histórias salvas:', e);
+            this.savedStories = [];
+          }
+        },
+        
+        // Salvar história atual
+        saveCurrentStory() {
+          // Validação básica
+          if (!this.story.title && !this.story.persona && !this.story.action) {
+            toast('Preencha pelo menos o título ou persona/ação para salvar');
+            return;
+          }
+          
+          try {
+            const now = Date.now();
+            const newStory = {
+              id: crypto.randomUUID(),
+              title: this.story.title || 'Sem título',
+              persona: this.story.persona || '',
+              action: this.story.action || '',
+              benefit: this.story.benefit || '',
+              description: this.story.description || '',
+              dependencies: this.story.dependencies || '',
+              tags: this.story.tags || '',
+              priority: this.story.priority || '',
+              estimate: this.story.estimate || '',
+              criteria: JSON.parse(JSON.stringify(this.story.criteria)), // Deep copy
+              createdAt: now,
+              updatedAt: now
+            };
+            
+            // Adicionar à lista (sempre cria novo item)
+            this.savedStories.unshift(newStory); // Adiciona no início
+            
+            // Salvar no localStorage
+            localStorage.setItem(this.savedStoriesKey, JSON.stringify(this.savedStories));
+            
+            // Mostrar toast de sucesso
+            toast('História salva com sucesso!');
+            
+            // Limpar formulário atual
+            this.clearAll();
+            
+            // Focar no campo título
+            this.$nextTick(() => {
+              const titleInput = document.getElementById('story-title');
+              if (titleInput) titleInput.focus();
+            });
+            
+          } catch(e) {
+            console.error('Erro ao salvar história:', e);
+            if (e.name === 'QuotaExceededError') {
+              toast('Não foi possível salvar — armazenamento cheio');
+            } else {
+              toast('Erro ao salvar história');
+            }
+          }
+        },
+        
+        // Abrir modal com história selecionada
+        openStoryModal(story) {
+          this.selectedStory = story;
+          this.showStoryModal = true;
+          
+          // Focus trap no modal
+          this.$nextTick(() => {
+            const modal = document.getElementById('story-modal');
+            if (modal) {
+              const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+              if (focusableElements.length > 0) {
+                focusableElements[0].focus();
+              }
+            }
+          });
+        },
+        
+        // Fechar modal
+        closeStoryModal() {
+          this.showStoryModal = false;
+          this.selectedStory = null;
+        },
+        
+        // Gerar markdown da história selecionada
+        generateStoryMarkdown(story) {
+          const parts = [];
+          parts.push('# ' + story.title);
+          parts.push('');
+          parts.push('**User Story**');
+          
+          // Gerar linha da user story
+          const persona = story.persona || '[persona]';
+          const action = story.action || '[ação]';
+          const benefit = story.benefit || '[benefício]';
+          parts.push(`Como ${persona}, eu quero ${action} para ${benefit}.`);
+          
+          if (story.description) { 
+            parts.push('', '**Descrição**', story.description); 
+          }
+          
+          const meta = [];
+          if (story.dependencies) meta.push('**Dependências:** ' + story.dependencies);
+          if (story.tags) meta.push('**Tags:** ' + story.tags);
+          if (story.priority || story.estimate) {
+            meta.push('**Prioridade/Estimativa:** ' + (story.priority || '—') + ' • ' + (story.estimate ? story.estimate + ' pts' : '—'));
+          }
+          if (meta.length) parts.push('', ...meta);
+          
+          if (story.criteria.length) {
+            parts.push('', '**Critérios de Aceitação (Gherkin)**');
+            parts.push('```gherkin');
+            parts.push('Feature: ' + story.title);
+            story.criteria.forEach((sc, i) => {
+              parts.push('  Scenario: Cenário ' + (i+1));
+              if (sc.given) parts.push('    Given ' + sc.given);
+              if (sc.when)  parts.push('    When ' + sc.when);
+              if (sc.then)  parts.push('    Then ' + sc.then);
+            });
+            parts.push('```');
+          }
+          
+          return parts.join('\n');
+        },
+        
+        // Copiar markdown da história selecionada
+        async copySelectedStoryMarkdown() {
+          if (!this.selectedStory) return;
+          
+          const markdown = this.generateStoryMarkdown(this.selectedStory);
+          try {
+            await navigator.clipboard.writeText(markdown);
+            toast('Markdown copiado!');
+          } catch(e) {
+            console.error('Erro ao copiar:', e);
+            toast('Falha ao copiar.');
+          }
+        },
+        
+        // Carregar história no editor
+        loadStoryInEditor(story) {
+          this.story = {
+            title: story.title,
+            persona: story.persona,
+            action: story.action,
+            benefit: story.benefit,
+            description: story.description,
+            dependencies: story.dependencies,
+            tags: story.tags,
+            priority: story.priority,
+            estimate: story.estimate,
+            criteria: JSON.parse(JSON.stringify(story.criteria)) // Deep copy
+          };
+          
+          this.closeStoryModal();
+          this.saveLocal(); // Salvar no state atual
+          toast('História carregada no editor');
+        },
+        
+        // Remover história salva
+        removeStory(storyId, event) {
+          event.stopPropagation(); // Prevenir abertura do modal
+          
+          this.savedStories = this.savedStories.filter(s => s.id !== storyId);
+          try {
+            localStorage.setItem(this.savedStoriesKey, JSON.stringify(this.savedStories));
+            toast('História removida');
+          } catch(e) {
+            console.warn('Erro ao salvar após remoção:', e);
+          }
+        },
+        
+        // Formatar data para exibição
+        formatDate(timestamp) {
+          const date = new Date(timestamp);
+          return date.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        },
+        
+        // Toggle sidebar
+        toggleSidebar() {
+          this.isSidebarOpen = !this.isSidebarOpen;
         },
         // --- Score ---
         investScore() {
@@ -500,6 +721,22 @@
                 <div class="w-5 h-5 opacity-0" aria-hidden="true"></div>
               </button>
 
+              <!-- Botão Salvar -->
+              <button @click="saveCurrentStory()" type="button" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" aria-label="Salvar história atual">
+                <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                Salvar
+              </button>
+
+              <!-- Botão toggle sidebar -->
+              <button @click="toggleSidebar()" type="button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" aria-label="Abrir/fechar sidebar de histórias salvas">
+                <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                </svg>
+                Histórias
+              </button>
+
               <!-- Clear button -->
               <button @click="clearAll()" type="button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" aria-label="Limpar todos os campos">
                 <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -554,8 +791,86 @@
       </div>
     </nav>
 
+    <!-- Sidebar de histórias salvas -->
+    <aside 
+      x-show="isSidebarOpen"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="transform -translate-x-full"
+      x-transition:enter-end="transform translate-x-0"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="transform translate-x-0"
+      x-transition:leave-end="transform -translate-x-full"
+      class="fixed left-0 top-0 z-40 w-80 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg"
+      @click.away="isSidebarOpen = false"
+    >
+      <!-- Header da sidebar -->
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Histórias Salvas</h3>
+        <button @click="toggleSidebar()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Lista de histórias -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <!-- Estado vazio -->
+        <template x-if="savedStories.length === 0">
+          <div class="text-center py-8">
+            <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Nenhuma história salva</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Use o botão "Salvar" para adicionar</p>
+          </div>
+        </template>
+
+        <!-- Lista com histórias -->
+        <div class="space-y-3" x-show="savedStories.length > 0">
+          <template x-for="story in savedStories" :key="story.id">
+            <div 
+              @click="openStoryModal(story)"
+              class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white truncate" x-text="story.title"></h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="formatDate(story.updatedAt)"></p>
+                  <!-- Preview da user story -->
+                  <p class="text-xs text-gray-600 dark:text-gray-300 mt-2 line-clamp-2" x-text="`Como ${story.persona || '[persona]'}, eu quero ${story.action || '[ação]'}...`"></p>
+                </div>
+                <button 
+                  @click="removeStory(story.id, $event)"
+                  class="ml-2 p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Remover história"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Overlay para fechar sidebar em mobile -->
+    <div 
+      x-show="isSidebarOpen" 
+      x-transition:enter="transition-opacity ease-linear duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition-opacity ease-linear duration-300"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="fixed inset-0 z-30 bg-gray-900 bg-opacity-50 lg:hidden"
+      @click="isSidebarOpen = false"
+    ></div>
+
     <!-- Main -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-8" :class="{ 'lg:ml-80': isSidebarOpen }">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         <!-- Editor Column -->
         <section class="space-y-6">
@@ -949,6 +1264,91 @@
         </p>
       </div>
     </footer>
+    
+    <!-- Modal para exibir história selecionada -->
+    <div
+      x-show="showStoryModal"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="fixed inset-0 z-50 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
+      @keydown.escape="closeStoryModal()"
+    >
+      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeStoryModal()"></div>
+
+        <!-- Modal panel -->
+        <div
+          x-show="showStoryModal"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+          x-transition:leave="transition ease-in duration-200"
+          x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+          x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
+          id="story-modal"
+        >
+          <!-- Header do modal -->
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white" id="modal-title" x-text="selectedStory?.title || 'História'"></h3>
+            <button @click="closeStoryModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Conteúdo do modal -->
+          <div class="mb-6">
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview da História</label>
+              <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <pre class="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono overflow-auto max-h-96" x-text="selectedStory ? generateStoryMarkdown(selectedStory) : ''"></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões do modal -->
+          <div class="flex items-center justify-end gap-3">
+            <button
+              @click="loadStoryInEditor(selectedStory)"
+              type="button"
+              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              Carregar no Editor
+            </button>
+            <button
+              @click="copySelectedStoryMarkdown()"
+              type="button"
+              class="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <svg class="w-4 h-4 inline mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Copiar Markdown
+            </button>
+            <button
+              @click="closeStoryModal()"
+              type="button"
+              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   
   <!-- Carregar Flowbite antes do Alpine.js para garantir compatibilidade -->
