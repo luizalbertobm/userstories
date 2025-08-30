@@ -10,8 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
-  <script>
-    tailwind.config = {
+  <script        </section>
+
+        <!-- Sidebar Column -->
+        <aside class="space-y-6">  tailwind.config = {
       darkMode: 'class',
       content: [
         "./src/**/*.{html,js}",
@@ -543,9 +545,10 @@
     </nav>
 
     <!-- Main -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-4">
-      <!-- Editor -->
-      <section class="lg:col-span-8 space-y-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Editor Column -->
+        <section class="space-y-6">
         <!-- Card: Básico da história -->
         <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-none" @input="saveLocal()">
           <div class="flex items-center mb-4">
