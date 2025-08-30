@@ -419,7 +419,7 @@
     function toast(msg) {
       const el = document.createElement('div');
       el.textContent = msg;
-      el.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-3 py-2 rounded-xl shadow-lg z-50';
+      el.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-3 py-2 rounded-lg shadow-lg z-50';
       document.body.appendChild(el);
       setTimeout(() => { el.remove(); }, 1800);
     }
@@ -543,11 +543,12 @@
     </nav>
 
     <!-- Main -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-4">
-      <!-- Editor -->
-      <section class="lg:col-span-8 space-y-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <!-- Editor Column -->
+        <section class="space-y-6">
         <!-- Card: Básico da história -->
-        <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-none" @input="saveLocal()">
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200 dark:bg-gray-800 dark:border-gray-700" @input="saveLocal()">
           <div class="flex items-center mb-4">
             <div class="inline-flex items-center justify-center w-8 h-8 me-3 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-900 dark:text-blue-300">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-16H3l9 16z"/></svg>
@@ -557,19 +558,19 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label for="story-title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Título</label>
-              <input x-model.trim="story.title" @blur="autoTitle()" type="text" id="story-title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Aprovação de despesas no mobile" />
+              <input x-model.trim="story.title" @blur="autoTitle()" type="text" id="story-title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Aprovação de despesas no mobile" />
             </div>
             <div>
               <label for="story-persona" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Persona (Como)</label>
-              <input x-model.trim="story.persona" type="text" id="story-persona" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Aprovador financeiro" />
+              <input x-model.trim="story.persona" type="text" id="story-persona" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Aprovador financeiro" />
             </div>
             <div class="sm:col-span-2">
               <label for="story-action" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Ação (Eu quero)</label>
-              <input x-model.trim="story.action" type="text" id="story-action" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="aprovar despesas pelo aplicativo" />
+              <input x-model.trim="story.action" type="text" id="story-action" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="aprovar despesas pelo aplicativo" />
             </div>
             <div class="sm:col-span-2">
               <label for="story-benefit" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Benefício (Para)</label>
-              <input x-model.trim="story.benefit" type="text" id="story-benefit" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="reduzir o tempo de reembolso" />
+              <input x-model.trim="story.benefit" type="text" id="story-benefit" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="reduzir o tempo de reembolso" />
             </div>
           </div>
           <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -581,7 +582,7 @@
         </div>
 
         <!-- Card: Detalhes -->
-        <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-none" @input="saveLocal()">
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200 dark:bg-gray-800 dark:border-gray-700" @input="saveLocal()">
           <div class="flex items-center mb-4">
             <div class="inline-flex items-center justify-center w-8 h-8 me-3 text-green-500 bg-green-100 rounded-lg dark:bg-green-900 dark:text-green-300">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M9 4v16"/></svg>
@@ -591,22 +592,22 @@
           <div class="grid grid-cols-1 gap-6">
             <div>
               <label for="story-description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Descrição curta</label>
-              <textarea x-model.trim="story.description" rows="4" id="story-description" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Contexto, restrições, hipóteses"></textarea>
+              <textarea x-model.trim="story.description" rows="4" id="story-description" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Contexto, restrições, hipóteses"></textarea>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label for="story-dependencies" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Dependências</label>
-                <input x-model.trim="story.dependencies" type="text" id="story-dependencies" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Ex: autenticação, políticas de aprovação" />
+                <input x-model.trim="story.dependencies" type="text" id="story-dependencies" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Ex: autenticação, políticas de aprovação" />
               </div>
               <div>
                 <label for="story-tags" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tags</label>
-                <input x-model.trim="story.tags" type="text" id="story-tags" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="fintech, mobile, aprovação" />
+                <input x-model.trim="story.tags" type="text" id="story-tags" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="fintech, mobile, aprovação" />
               </div>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
               <div>
                 <label for="story-priority" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Prioridade</label>
-                <select x-model="story.priority" id="story-priority" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <select x-model="story.priority" id="story-priority" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                   <option value="">—</option>
                   <option>Must</option>
                   <option>Should</option>
@@ -616,14 +617,14 @@
               </div>
               <div>
                 <label for="story-estimate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Estimativa (pts)</label>
-                <input x-model="story.estimate" type="number" min="0" step="0.5" id="story-estimate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                <input x-model="story.estimate" type="number" min="0" step="0.5" id="story-estimate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
               </div>
             </div>
           </div>
         </div>
 
         <!-- Card: Critérios de Aceitação -->
-        <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-none" @input="saveLocal()">
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200 dark:bg-gray-800 dark:border-gray-700" @input="saveLocal()">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center">
               <div class="inline-flex items-center justify-center w-8 h-8 me-3 text-emerald-500 bg-emerald-100 rounded-lg dark:bg-emerald-900 dark:text-emerald-300">
@@ -632,11 +633,11 @@
               <h5 class="mb-0 text-lg font-semibold text-gray-900 dark:text-white">Critérios de Aceitação</h5>
             </div>
             <div class="flex items-center gap-2">
-              <button @click="addScenario()" class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" aria-label="Adicionar novo cenário de teste">
+              <button @click="addScenario()" class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" aria-label="Adicionar novo cenário de teste">
                 <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Adicionar
               </button>
-              <button @click="generateHappyPath()" class="px-3 py-1.5 text-sm font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors" aria-label="Gerar automaticamente cenário de caminho feliz">
+              <button @click="generateHappyPath()" class="px-3 py-1.5 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors" aria-label="Gerar automaticamente cenário de caminho feliz">
                 <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 Happy Path
               </button>
@@ -657,15 +658,15 @@
               <div class="grid grid-cols-1 gap-4">
                 <div>
                   <label class="block mb-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">Given</label>
-                  <input x-model.trim="sc.given" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-emerald-500 dark:focus:border-emerald-500" placeholder="que sou um aprovador autenticado"/>
+                  <input x-model.trim="sc.given" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-emerald-500 dark:focus:border-emerald-500" placeholder="que sou um aprovador autenticado"/>
                 </div>
                 <div>
                   <label class="block mb-2 text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">When</label>
-                  <input x-model.trim="sc.when" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="aprovo uma despesa com política válida"/>
+                  <input x-model.trim="sc.when" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="aprovo uma despesa com política válida"/>
                 </div>
                 <div>
                   <label class="block mb-2 text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Then</label>
-                  <input x-model.trim="sc.then" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500" placeholder="o status muda para 'Aprovada' e o solicitante é notificado"/>
+                  <input x-model.trim="sc.then" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500" placeholder="o status muda para 'Aprovada' e o solicitante é notificado"/>
                 </div>
               </div>
             </div>
@@ -677,12 +678,12 @@
             </p>
           </div>
         </div>
-      </section>
+        </section>
 
-      <!-- Painel lateral -->
-      <aside class="lg:col-span-4 space-y-6">
+        <!-- Sidebar Column -->
+        <aside class="space-y-6">
         <!-- Preview & Export -->
-        <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-none">
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200 dark:bg-gray-800 dark:border-gray-700">
           <div class="flex items-center mb-4">
             <div class="inline-flex items-center justify-center w-8 h-8 me-3 text-gray-500 bg-gray-100 rounded-lg dark:bg-gray-700 dark:text-gray-400">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
@@ -727,7 +728,7 @@
         </div>
 
         <!-- Lint de Ambiguidade -->
-        <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-none">
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200 dark:bg-gray-800 dark:border-gray-700">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center">
               <div class="inline-flex items-center justify-center w-8 h-8 me-3 text-amber-500 bg-amber-100 rounded-lg dark:bg-amber-900 dark:text-amber-300">
@@ -757,7 +758,7 @@
         </div>
 
         <!-- DoR & INVEST -->
-        <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-none hover:shadow-lg transition-all duration-300" @input="saveLocal()">
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-all duration-300" @input="saveLocal()">
           <div class="flex items-center mb-4">
             <div class="inline-flex items-center justify-center w-8 h-8 me-3 text-emerald-500 bg-emerald-100 rounded-lg dark:bg-emerald-900 dark:text-emerald-300">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
@@ -823,23 +824,23 @@
           </div>
           <div class="grid grid-cols-1 gap-3 text-sm">
             <div class="flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-              <input id="check-persona" type="checkbox" x-model="checks.persona" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"> 
+              <input id="check-persona" type="checkbox" x-model="checks.persona" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"> 
               <label for="check-persona" class="ms-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">Persona definida</label>
             </div>
             <div class="flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-              <input id="check-value" type="checkbox" x-model="checks.value" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"> 
+              <input id="check-value" type="checkbox" x-model="checks.value" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"> 
               <label for="check-value" class="ms-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">Valor de negócio claro</label>
             </div>
             <div class="flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-              <input id="check-criteria" type="checkbox" x-model="checks.criteria" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"> 
+              <input id="check-criteria" type="checkbox" x-model="checks.criteria" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"> 
               <label for="check-criteria" class="ms-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">Critérios testáveis</label>
             </div>
             <div class="flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-              <input id="check-dependencies" type="checkbox" x-model="checks.dependencies" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"> 
+              <input id="check-dependencies" type="checkbox" x-model="checks.dependencies" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"> 
               <label for="check-dependencies" class="ms-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">Dependências mapeadas</label>
             </div>
             <div class="flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-              <input id="check-size" type="checkbox" x-model="checks.size" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"> 
+              <input id="check-size" type="checkbox" x-model="checks.size" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"> 
               <label for="check-size" class="ms-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">Pequena (≤ 1 sprint)</label>
             </div>
           </div>
@@ -855,7 +856,7 @@
         </div>
 
         <!-- Testes (Smoke) -->
-        <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-none">
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200 dark:bg-gray-800 dark:border-gray-700">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center">
               <div class="inline-flex items-center justify-center w-8 h-8 me-3 text-purple-500 bg-purple-100 rounded-lg dark:bg-purple-900 dark:text-purple-300">
@@ -863,7 +864,7 @@
               </div>
               <h5 class="mb-0 text-lg font-semibold text-gray-900 dark:text-white">Testes rápidos</h5>
             </div>
-            <button @click="runTests()" class="px-3 py-1.5 text-sm font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors" aria-label="Executar testes de verificação do sistema">
+            <button @click="runTests()" class="px-3 py-1.5 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" aria-label="Executar testes de verificação do sistema">
               <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21 5,3"/></svg>
               Executar
             </button>
@@ -888,7 +889,8 @@
             </template>
           </ul>
         </div>
-      </aside>
+        </aside>
+      </div>
     </main>
 
     <!-- Footer -->
